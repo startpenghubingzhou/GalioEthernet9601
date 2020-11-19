@@ -161,6 +161,14 @@ enum
     kScan                = 0xFF
 };
 
+// Notifications
+
+enum
+{
+    kNetwork_Connection            = 0,
+    kResponse_Available            = 1,
+    kConnection_Speed_Change        = 0x2A
+};
 //*********************************
 #pragma mark -
 #pragma mark struct_defs
@@ -231,7 +239,21 @@ uint16_t stats[13] = {
     kXMIT_LATE_COLLISIONS_REQ
 };
 
+static struct MediumTable
+{
+    uint32_t    type;
+    uint32_t    speed;
+}
 
+mediumTable[] =
+{
+    {kIOMediumEthernetNone,                                                0},
+    {kIOMediumEthernetAuto,                                                0},
+    {kIOMediumEthernet10BaseT      | kIOMediumOptionHalfDuplex,                                10},
+    {kIOMediumEthernet10BaseT      | kIOMediumOptionFullDuplex,                                10},
+    {kIOMediumEthernet100BaseTX  | kIOMediumOptionHalfDuplex,                                100},
+    {kIOMediumEthernet100BaseTX  | kIOMediumOptionFullDuplex,                                100}
+};
 
 
 

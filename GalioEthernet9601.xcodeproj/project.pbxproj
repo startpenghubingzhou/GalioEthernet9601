@@ -51,8 +51,8 @@
 			isa = PBXGroup;
 			children = (
 				674E629C2566B45C00E6A596 /* DM9601Struct.h */,
-				674E629A2566B45C00E6A596 /* DM9601V2.cpp */,
 				674E629B2566B45C00E6A596 /* DM9601V2.hpp */,
+				674E629A2566B45C00E6A596 /* DM9601V2.cpp */,
 				674E62942566B38800E6A596 /* Info.plist */,
 			);
 			path = GalioEthernet9601;

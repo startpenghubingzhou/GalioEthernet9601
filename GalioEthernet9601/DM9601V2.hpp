@@ -26,6 +26,15 @@
 
 #define super IOEthernetController
 
+struct EndpointRequest{
+    uint8_t type;
+    uint8_t direction;
+    uint16_t maxPacketSize;
+    uint8_t interval;
+}__attribute__((packed));
+
+typedef struct EndpointRequest EndpointRequest;
+
 class DM9601V2 : public super {
     OSDeclareDefaultStructors(DM9601V2)
     
@@ -46,14 +55,16 @@ public:
     
     virtual void stop(IOService *provider) APPLE_KEXT_OVERRIDE;
     
+    void timeoutOccurred(IOTimerEventSource *timer);
+    
     //*********************************
     #pragma mark -
-    #pragma mark IOEthernetController Methods
+    #pragma mark IOEthernetController Override Methods
     #pragma mark -
     //*********************************
 
     
-    //virtual IOReturn enable(IONetworkInterface *netif);
+    virtual IOReturn enable(IONetworkInterface* netif);
     //virtual IOReturn disable(IONetworkInterface *netif);
     //virtual IOReturn setWakeOnMagicPacket(bool active);
     //virtual IOReturn getPacketFilters(const OSSymbol    *group, uint32_t *filters ) const;
@@ -83,31 +94,38 @@ private:
     
     bool createNetworkInterface();
     
-    void timeoutOccurred(IOTimerEventSource *timer);
+    bool wakeUp();
     
-    
-    /*bool wakeUp();
-    
-    void putToSleep();
+    //void putToSleep();
     
     bool createMediumTables();
     
-    bool allocateResources();
+    bool bufferalloc();
     
-    bool createNetworkInterface();
+    void bufferrelease();
     
     uint32_t outputPacket(mbuf_t pkt, void* param);
     
     bool USBTransmitPacket(mbuf_t packet);
     
-    bool USBSetMulticastFilter(IOEthernetAddress* addrs, uint32_t count);
+   //bool USBSetMulticastFilter(IOEthernetAddress* addrs, uint32_t count);
     
     bool USBSetPacketFilter();
     
     IOReturn clearPipeStall(IOUSBHostPipe* thePipe);
     
-    void receivePacket(uint8_t *packet, uint32_t size);*/
+    void receivePacket(uint8_t *packet, uint32_t size);
    
+    static void commReadComplete(void* obj, void* param, IOReturn ioret, uint32_t remaining);
+    
+    static void dataReadComplete(void* obj, void* param, IOReturn ioret, uint32_t remaining);
+    
+    static void dataWriteComplete(void* obj, void* param, IOReturn ioret, uint32_t remaining);
+    
+    static void merWriteComplete(void* obj, void* param, IOReturn ioret, uint32_t remaining);
+    
+    static void statsWriteComplete(void* obj, void* param, IOReturn ioret, uint32_t remaining);
+    
     //*********************************
     #pragma mark -
     #pragma mark Helper Function
@@ -125,6 +143,9 @@ private:
     bool getFunctionalDescriptors();
     
     IOReturn GetStringDescriptor(IOUSBHostDevice* udev, char* stringBuffer, uint16_t index, int maxLen);
+    
+    IOUSBHostPipe* findpipe(IOUSBHostInterface* intf, IOUSBHostPipe* current, EndpointRequest* request);
+    
 private:
     IOEthernetInterface* fNetworkInterface;
     IOBasicOutputQueue* fTransmitQueue;
