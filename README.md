@@ -31,7 +31,7 @@ If you have some ideas about this project, just write it in issue page. If you h
 
 I have tested in 13.6 and it may support in 12.0+, but haven' t tested yet.
 
-## License
+## Documentation
 
 See [here](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/Documentation/DM9601-DS-P01-930914.pdf) for more information.
 
