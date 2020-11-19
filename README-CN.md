@@ -2,7 +2,7 @@
 
 ![Galio.jpg](./Documentation/Galio.jpg)
 
-
+[English](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/README.md)|[简体中文](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/README-CN.md)
 
 我做了这个项目来表达我对加里奥的致敬，他是我在英雄联盟里最喜欢的英雄之一。（皮这一下我很开心）
 

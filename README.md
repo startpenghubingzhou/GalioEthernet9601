@@ -2,7 +2,7 @@
 
 ![Galio.jpg](./Documentation/Galio.jpg)
 
-
+[English](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/README.md)|[简体中文](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/README-CN.md)
 
 I wrote this project to pay my respect to Galio, which is one of my favorite champions in LOL.:）
 
