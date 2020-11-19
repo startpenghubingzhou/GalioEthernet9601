@@ -35,13 +35,11 @@ I have tested in 13.6 and it may support in 12.0+, but haven' t tested yet.
 
 See [here](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/Documentation/DM9601-DS-P01-930914.pdf) for more information.
 
-
-
 ##Credits
 
 - @[haiku](https://github.com/haiku) for [haiku project](https://github.com/haiku/haiku)
 - @[samuelv0304](https://github.com/samuelv0304) for [USBCDCEthernet](https://github.com/samuelv0304/USBCDCEthernet)**(THE HIGHEST RESPECT)**
-- @[zxystd ](https://github.com/zxystd) for help in writing
+- @[zxystd ](https://github.com/zxystd) for help in writing this project
 
 ## License
 
