@@ -1,5 +1,8 @@
 # GalioEthernet9601
 
+![Galio.jpg](./Documentation/Galio.jpg)
+
+
 
 I wrote this project to pay my respect to Galio, which is one of my favorite champions in LOL.:）
 
