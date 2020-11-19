@@ -16,7 +16,7 @@ So that' s it , I wrote this new project.
 
 ## What can it do?
 
-As I said, this is a **Re-writed** project from USBCDCEthernet, so it can do what USBCDCEthernet can do in theory. For now I have no plans to add some new features on it because  I  ‘ m really a Green-hand on IOKit. Maybe I could get down to add some new features on it as soon as it is completely transplanted from USBCDCEthernet. But at least, this driver can do these things on your MacOS/Hackintosh:
+As I said, this is a **Re-writed** project from USBCDCEthernet, so it can do what USBCDCEthernet can do in theory. For now I have no plans to add some new features on it because  I  ' m really a Green-hand on IOKit. Maybe I could get down to add some new features on it as soon as it is completely transplanted from USBCDCEthernet. But at least, this driver can do these things on your MacOS/Hackintosh:
 
 - Detect your Adapter(not really work, will work soon)
 - Bascially support for your Adapter
