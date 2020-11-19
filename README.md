@@ -37,7 +37,7 @@ See [here](https://github.com/startpenghubingzhou/GalioEthernet9601/blob/main/Do
 
 
 
-##Credits
+## Credits
 
 - @[haiku](https://github.com/haiku) for [haiku project](https://github.com/haiku/haiku)
 - @[samuelv0304](https://github.com/samuelv0304) for [USBCDCEthernet](https://github.com/samuelv0304/USBCDCEthernet)**(THE HIGHEST RESPECT)**
