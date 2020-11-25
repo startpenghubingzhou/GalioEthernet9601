@@ -1709,7 +1709,72 @@ IOOutputQueue* DM9601V2::createOutputQueue()
     
 }
 
+IOReturn DM9601V2::selectMedium(const IONetworkMedium* medium)
+{
+    
+    
+    setSelectedMedium(medium);
+    
+    return kIOReturnSuccess;
+    
+}
+
 IOReturn DM9601V2::getHardwareAddress(IOEthernetAddress *ea)
 {
+    uint32_t i;
+    
+    IOLog("%s::getHardwareAddress!\n", getName());
+    
+    for (i=0; i<6; i++)
+    {
+        ea->bytes[i] = fEaddr[i];
+    }
+    
     return kIOReturnSuccess;
+}
+
+
+
+const OSString* DM9601V2::newVendorString() const
+{
+    IOLog("%s::applying new vendor...\n", getName());
+    
+    return OSString::withCString((const char*)defaultName);        // Maybe we should use the descriptors
+    
+}
+
+const OSString* DM9601V2::newModelString() const
+{
+    
+    IOLog("%s::applying new model...\n", getName());
+    
+    return OSString::withCString("USB");        // Maybe we should use the descriptors
+    
+}
+
+const OSString* DM9601V2::newRevisionString() const
+{
+    
+    IOLog("%s::applying new Revision...\n", getName());
+    
+    return OSString::withCString("");
+    
+}
+
+IOReturn DM9601V2::setMulticastMode(IOEnetMulticastMode mode)
+{
+    
+    IOLog("%s::setMulticastMode!\n", getName());
+    
+    if (mode)
+    {
+        fPacketFilter |= kPACKET_TYPE_ALL_MULTICAST;
+    } else {
+        fPacketFilter &= ~kPACKET_TYPE_ALL_MULTICAST;
+    }
+    
+    USBSetPacketFilter();
+    
+    return kIOReturnSuccess;
+    
 }

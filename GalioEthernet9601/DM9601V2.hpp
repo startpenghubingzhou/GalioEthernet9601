@@ -68,15 +68,15 @@ public:
     //virtual IOReturn disable(IONetworkInterface *netif);
     //virtual IOReturn setWakeOnMagicPacket(bool active);
     //virtual IOReturn getPacketFilters(const OSSymbol    *group, uint32_t *filters ) const;
-    //virtual IOReturn selectMedium(const IONetworkMedium *medium);
+    virtual IOReturn selectMedium(const IONetworkMedium *medium);
     virtual IOReturn getHardwareAddress(IOEthernetAddress *addr);
-    //virtual IOReturn setMulticastMode(IOEnetMulticastMode mode);
+    virtual IOReturn setMulticastMode(IOEnetMulticastMode mode);
     //virtual IOReturn setMulticastList(IOEthernetAddress *addrs, uint32_t count);
     //virtual IOReturn setPromiscuousMode(IOEnetPromiscuousMode mode);
     virtual IOOutputQueue* createOutputQueue();
-    //virtual const OSString* newVendorString(void) const;
-    //virtual const OSString* newModelString(void) const;
-    //virtual const OSString* newRevisionString(void) const;
+    virtual const OSString* newVendorString(void) const;
+    virtual const OSString* newModelString(void) const;
+    virtual const OSString* newRevisionString(void) const;
     //virtual bool configureInterface(IONetworkInterface *netif);
     
 private:
