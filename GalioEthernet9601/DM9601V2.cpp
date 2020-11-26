@@ -680,6 +680,45 @@ bool DM9601V2::wakeUp()
     return true;
 }
 
+void DM9601V2::putToSleep()
+{
+    IOReturn ior;
+    
+    IOLog("%s::putToSleep\n", getName());
+    
+    fReady = false;
+    
+    if (fTimerSource)
+    {
+        fTimerSource->cancelTimeout();
+    }
+    
+    setLinkStatus(0, 0);
+    
+    // Release all resources
+    
+    bufferrelease();
+    
+  /*  if (!fTerminate)
+    {
+        //if (fbmAttributes & kUSBAtrBusPowered)
+        //{
+            //ior = fpDevice->SuspendDevice(true);         // Suspend the device again (if supported and not unplugged)
+            if (ior)
+            {
+                ELG(0, ior, 'rPSD', "com_apple_driver_dts_USBCDCEthernet::releasePort - SuspendDevice error");
+            }
+        }
+    }*/
+    
+    if ((fTerminate) && (!fReady))        // if it's the result of a terminate and no interfaces enabled we also need to close the device
+    {
+        DM9601Device->close(this);
+        DM9601Device = NULL;
+    }
+    
+}
+
 bool DM9601V2::createMediumTables()
 {
     IONetworkMedium* medium;
@@ -953,6 +992,79 @@ bool DM9601V2::USBTransmitPacket(mbuf_t packet)
     
 }
 
+bool DM9601V2::USBSetMulticastFilter(IOEthernetAddress* addrs, uint32_t count)
+{
+#if 1
+    return true;
+#else
+    IOReturn rc;
+    DeviceRequest* MER;
+    uint8_t* eaddrs;
+    uint32_t eaddLen;
+    uint32_t i,j,rnum;
+    
+    IOLog("%s::USBSetMulticastFilter!\n", getName());
+    
+    if (count > (uint32_t)(fMcFilters & kFiltersSupportedMask))
+    {
+        IOLog("%s::No multicast filters supported!\n", getName());
+        return false;
+    }
+    
+    MER = (DeviceRequest*)IOMalloc(sizeof(DeviceRequest));
+    if (!MER)
+    {
+        IOLog("%s::allocate MER failed!\n", getName());
+        return false;
+    }
+    bzero(MER, sizeof(IOUSBDevRequest));
+    
+    eaddLen = count * kIOEthernetAddressSize;
+    eaddrs = (uint8_t*)IOMalloc(eaddLen);
+    if (!eaddrs)
+    {
+        IOLog("%s::allocate address buffer failed!\n", getName());
+        return false;
+    }
+    bzero(eaddrs, eaddLen);
+    
+    // Build the filter address buffer
+    
+    rnum = 0;
+    for (i=0; i<count; i++)
+    {
+        if (rnum > eaddLen)                // Just in case
+        {
+            break;
+        }
+        for (j=0; j<kIOEthernetAddressSize; j++)
+        {
+            eaddrs[rnum++] = addrs->bytes[j];
+        }
+    }
+    
+    // Now build the Management Element Request
+    
+    MER->bmRequestType = USBmakebmRequestType(kUSBOut, kUSBClass, kUSBInterface);
+    MER->bRequest = kSet_Ethernet_Multicast_Filter;
+    MER->wValue = count;
+    MER->wIndex = fCommInterfaceNumber;
+    MER->wLength = eaddLen;
+    
+    fMERCompletionInfo.parameter = MER;
+    rc = DM9601Device->deviceRequest(DM9601Device, *MER, eaddrs, &fMERCompletionInfo);
+
+    if (rc != kIOReturnSuccess)
+    {
+        IOLog("%s::Error issueing DeviceRequest!\n", getName());
+        IOFree(eaddrs, eaddLen);
+        IOFree(MER, sizeof(IOUSBDevRequest));
+        return false;
+    }
+    
+    return true;
+#endif
+}
 
 uint32_t DM9601V2::outputPacket(mbuf_t pkt, void* param)
 {
@@ -1703,6 +1815,149 @@ IOReturn DM9601V2::enable(IONetworkInterface* netif)
     
 }
 
+IOReturn DM9601V2::disable(IONetworkInterface* netif)
+{
+    
+    IOLog("%s::disabling...\n", getName());
+    
+    // Disable our IOOutputQueue object. This will prevent the
+    // outputPacket() method from being called
+    
+    fTransmitQueue->stop();
+    
+    // Flush all packets currently in the output queue
+    
+    fTransmitQueue->setCapacity(0);
+    fTransmitQueue->flush();
+    
+    putToSleep();
+    
+    fNetifEnabled = false;
+    fReady = false;
+    
+    return kIOReturnSuccess;
+    
+}
+
+IOReturn DM9601V2::setWakeOnMagicPacket(bool active)
+{
+#if 1
+    return kIOReturnSuccess;
+#else
+    DeviceRequest devreq;
+    IOReturn ioret = kIOReturnSuccess;
+    uint32_t pdata;
+    
+    IOLog("%s::setWakeOnMagicPacket\n", getName());
+    
+    fWOL = active;
+    
+    if (fbmAttributes & kUSBAtrRemoteWakeup)
+    {
+        
+        // Clear the feature if wake-on-lan is not set (SetConfiguration sets the feature
+        // automatically if the device supports remote wake up)
+        
+        if (!active)
+        {
+            devreq.bmRequestType = USBmakebmRequestType(kUSBOut, kUSBStandard, kUSBDevice);
+            devreq.bRequest = kUSBRqClearFeature;
+            devreq.wValue = kUSBFeatureDeviceRemoteWakeup;
+            devreq.wIndex = 0;
+            devreq.wLength = 0;
+           // devreq.pData = 0;
+            
+            ioret = DM9601Device->deviceRequest(DM9601Device, devreq, &pdata, 0);
+            if (ioret == kIOReturnSuccess)
+            {
+                IOLog("%s::Clearing remote wake up feature successful!\n", getName());
+            } else {
+                IOLog("%s::Clearing remote wake up feature failed!\n", getName());
+            }
+        }
+    } else {
+        IOLog("%s::Remote wake up not supported!\n", getName());
+    }
+    
+    
+    return kIOReturnSuccess;
+#endif
+}
+
+IOReturn DM9601V2::getPacketFilters(const OSSymbol* group, uint32_t* filters) const
+{
+#if 1
+    return kIOReturnSuccess;
+#else
+    IOReturn ioret = kIOReturnSuccess;
+    
+    IOLog("%s::getPacketFilters!\n", getName());
+    
+    if (group == gIOEthernetWakeOnLANFilterGroup)
+    {
+        if (fbmAttributes & kUSBAtrRemoteWakeup)
+        {
+            *filters = kIOEthernetWakeOnMagicPacket;
+        } else {
+            *filters = 0;
+        }
+    } else {
+        if (group == gIONetworkFilterGroup)
+        {
+            *filters = kIOPacketFilterUnicast | kIOPacketFilterBroadcast | kIOPacketFilterMulticast | kIOPacketFilterMulticastAll | kIOPacketFilterPromiscuous;
+        } else {
+            ioret = super::getPacketFilters(group, filters);
+        }
+    }
+    
+    if (ioret != kIOReturnSuccess)
+    {
+        IOLog("%s::getPacketFilters failed!\n", getName());
+    }
+    
+    return ioret;
+#endif
+}
+
+IOReturn DM9601V2::setMulticastList(IOEthernetAddress *addrs, UInt32 count)
+{
+//#if 1
+    //return kIOReturnSuccess;
+//#else
+    bool uStat;
+    
+    IOLog("%s::setMulticastList\n", getName());
+    
+    if (count != 0)
+    {
+        uStat = USBSetMulticastFilter(addrs, count);
+        if (!uStat)
+        {
+            return kIOReturnIOError;
+        }
+    }
+    
+    return kIOReturnSuccess;
+//#endif
+}
+
+IOReturn DM9601V2::setPromiscuousMode(bool active)
+{
+    IOLog("%s::setPromiscuousMode\n", getName());
+    
+    if (active)
+    {
+        fPacketFilter |= kPACKET_TYPE_PROMISCUOUS;
+    } else {
+        fPacketFilter &= ~kPACKET_TYPE_PROMISCUOUS;
+    }
+    
+    USBSetPacketFilter();
+    
+    return kIOReturnSuccess;
+    
+}
+
 IOOutputQueue* DM9601V2::createOutputQueue()
 {    
     return IOBasicOutputQueue::withTarget(this, TRANSMIT_QUEUE_SIZE);
@@ -1776,5 +2031,39 @@ IOReturn DM9601V2::setMulticastMode(IOEnetMulticastMode mode)
     USBSetPacketFilter();
     
     return kIOReturnSuccess;
+    
+}
+
+bool DM9601V2::configureInterface(IONetworkInterface* netif)
+{
+    IONetworkData* nd;
+    
+    IOLog("%s::configureInterface!\n", getName());
+    
+    if (super::configureInterface(netif) == false)
+    {
+        IOLog("%s::super  configureInterface failed!\n", getName());
+        return false;
+    }
+    
+    // Get a pointer to the statistics structure in the interface
+    
+    nd = netif->getNetworkData(kIONetworkStatsKey);
+    if (!nd || !(fpNetStats = (IONetworkStats *)nd->getBuffer()))
+    {
+        IOLog("%s::Invalid network statistics!\n", getName());
+        return false;
+    }
+    
+    // Get the Ethernet statistics structure:
+    
+    nd = netif->getParameter(kIOEthernetStatsKey);
+    if (!nd || !(fpEtherStats = (IOEthernetStats*)nd->getBuffer()))
+    {
+         IOLog("%s::Invalid ethernet statistics!\n", getName());
+        return false;
+    }
+    
+    return true;
     
 }
